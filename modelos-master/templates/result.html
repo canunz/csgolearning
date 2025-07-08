@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> CS:GO Estadísticas de Partida</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Puntos morados de fondo estilo CS:GO */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 2px 2px, #8b5cf6 1px, transparent 0);
+            background-size: 30px 30px;
+            opacity: 0.15;
+            z-index: -2;
+            animation: dots-move 20s linear infinite;
+        }
+
+        @keyframes dots-move {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(30px) translateY(30px); }
+        }
+
+        /* Líneas de grilla CS:GO */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(139, 92, 246, 0.05) 25%, rgba(139, 92, 246, 0.05) 26%, transparent 27%),
+                linear-gradient(90deg, transparent 24%, rgba(139, 92, 246, 0.05) 25%, rgba(139, 92, 246, 0.05) 26%, transparent 27%);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header estilo CS:GO */
+        .match-header {
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .match-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc, #8b5cf6);
+            background-size: 200% 100%;
+            animation: border-glow 2s ease infinite;
+        }
+
+        @keyframes border-glow {
+            0%, 100% { background-position: 0% 0%; }
+            50% { background-position: 100% 0%; }
+        }
+
+        .match-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .match-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .match-detail {
+            color: #cccccc;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .match-detail::before {
+            content: '●';
+            color: #8b5cf6;
+            margin-right: 8px;
+        }
+
+        /* Resultado principal estilo scoreboard */
+        .scoreboard {
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.2);
+        }
+
+        .scoreboard-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .team-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .team-score {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            padding: 5px 15px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .team-score.win {
+            color: #22c55e;
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .team-score.lose {
+            color: #ef4444;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .vs-separator {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: #8b5cf6;
+            font-weight: 700;
+        }
+
+        /* Player stats section */
+        .player-stats {
+            padding: 20px;
+        }
+
+        .player-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #444;
+            border-left: 4px solid #8b5cf6;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .player-card::before {
+            content: '●';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #8b5cf6;
+            font-size: 1rem;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .player-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .survival-status {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .survival-status.survived {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+        .survival-status.eliminated {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        /* Stats grid estilo CS:GO */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Confidence meter estilo CS:GO */
+        .confidence-section {
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .confidence-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .confidence-title::before {
+            content: '●';
+            color: #8b5cf6;
+            margin-right: 8px;
+        }
+
+        .confidence-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            text-shadow: 
+                0 0 10px rgba(139, 92, 246, 0.8),
+                0 0 20px rgba(139, 92, 246, 0.6),
+                0 0 30px rgba(139, 92, 246, 0.4);
+            animation: text-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes text-glow {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(139, 92, 246, 0.8),
+                    0 0 20px rgba(139, 92, 246, 0.6),
+                    0 0 30px rgba(139, 92, 246, 0.4);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(139, 92, 246, 1),
+                    0 0 30px rgba(139, 92, 246, 0.8),
+                    0 0 45px rgba(139, 92, 246, 0.6);
+            }
+        }
+
+        .confidence-bar {
+            height: 20px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 
+                0 0 20px rgba(139, 92, 246, 0.6),
+                0 0 40px rgba(139, 92, 246, 0.4),
+                0 0 60px rgba(139, 92, 246, 0.2),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+            animation: confidence-glow 2s ease-in-out infinite alternate;
+        }
+
+        .confidence-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            border-radius: 10px;
+            animation: shine-sweep 3s ease-in-out infinite;
+        }
+
+        @keyframes confidence-glow {
+            0% { 
+                box-shadow: 
+                    0 0 20px rgba(139, 92, 246, 0.6),
+                    0 0 40px rgba(139, 92, 246, 0.4),
+                    0 0 60px rgba(139, 92, 246, 0.2),
+                    inset 0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            100% { 
+                box-shadow: 
+                    0 0 30px rgba(139, 92, 246, 0.8),
+                    0 0 60px rgba(139, 92, 246, 0.6),
+                    0 0 90px rgba(139, 92, 246, 0.4),
+                    inset 0 0 30px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes shine-sweep {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        /* Model info terminal */
+        .model-terminal {
+            background: #000000;
+            border: 2px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-prompt {
+            color: #8b5cf6;
+            margin-right: 10px;
+        }
+
+        .terminal-command {
+            color: #00ff00;
+        }
+
+        .terminal-output {
+            color: #cccccc;
+        }
+
+        .terminal-warning {
+            color: #fbbf24;
+        }
+
+        .terminal-success {
+            color: #22c55e;
+        }
+
+        /* Botones de acción */
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 2px solid #8b5cf6;
+            color: #ffffff;
+            border-radius: 4px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .match-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .scoreboard-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header del match -->
+        <div class="match-header">
+            <h1 class="match-title">ESTADÍSTICAS DE PARTIDA</h1>
+            <div class="match-info">
+                <span class="match-detail">DE_DUST2</span>
+                <span class="match-detail">COMPETITIVO</span>
+                <span class="match-detail">16 RONDAS</span>
+                <span class="match-detail">RANGO: ÉLITE GLOBAL</span>
+            </div>
+        </div>
+
+        <!-- Scoreboard principal -->
+        <div class="scoreboard">
+            <div class="scoreboard-header">
+                <div class="team-section">
+                    <span class="team-name">Anti-Terroristas</span>
+                    <div class="team-score win">16</div>
+                </div>
+                <div class="vs-separator">VS</div>
+                <div class="team-section">
+                    <div class="team-score lose">8</div>
+                    <span class="team-name">Terroristas</span>
+                </div>
+            </div>
+            <!-- Player stats -->
+            <div class="player-stats">
+                <div class="player-card">
+                    <div class="player-header">
+                        <span class="player-name">Reina_Morada_CS</span>
+                        <div class="survival-status survived">● SOBREVIVIÓ</div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item"><div class="stat-value">9</div><div class="stat-label">Bajas</div></div>
+                        <div class="stat-item"><div class="stat-value">2</div><div class="stat-label">Muertes</div></div>
+                        <div class="stat-item"><div class="stat-value">3</div><div class="stat-label">Asistencias</div></div>
+                        <div class="stat-item"><div class="stat-value">40%</div><div class="stat-label">HS%</div></div>
+                        <div class="stat-item"><div class="stat-value">85</div><div class="stat-label">ADR</div></div>
+                        <div class="stat-item"><div class="stat-value">1.2</div><div class="stat-label">Rating</div></div>
+                        <div class="stat-item"><div class="stat-value">$1200</div><div class="stat-label">Dinero</div></div>
+                        <div class="stat-item"><div class="stat-value">1</div><div class="stat-label">MVP</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Confidence meter -->
+        <div class="confidence-section">
+            <div class="confidence-header">
+                <span class="confidence-title">Confianza Predicción IA</span>
+                <span class="confidence-value">78%</span>
+            </div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: 78%;"></div>
+            </div>
+        </div>
+        <!-- Model terminal -->
+        <div class="model-terminal">
+            <div class="terminal-line"><span class="terminal-prompt">root@csgo-ia:~$</span><span class="terminal-command">./predictor_ml --analizar --datos_jugador</span></div>
+            <div class="terminal-line"><span class="terminal-output">[INFO] Cargando modelo ML...</span></div>
+            <div class="terminal-line"><span class="terminal-output">[INFO] Procesando estadísticas del jugador...</span></div>
+            <div class="terminal-line"><span class="terminal-output">[INFO] Características analizadas: TiempoVivo, Equipamiento, Ratio KD...</span></div>
+            <div class="terminal-line"><span class="terminal-warning">[WARN] Precisión del modelo: 85.2% - Alta confianza</span></div>
+            <div class="terminal-line"><span class="terminal-success">[ÉXITO] Predicción: PROBABILIDAD DE SUPERVIVENCIA ALTA</span></div>
+            <div class="terminal-line"><span class="terminal-success">[ÉXITO] Nivel de confianza: 78%</span></div>
+            <div class="terminal-line"><span class="terminal-prompt">root@csgo-ia:~$</span><span class="terminal-command">_</span></div>
+        </div>
+        <!-- Botones de acción -->
+        <div class="actions">
+            <a href="/" class="btn"><i class="fas fa-redo"></i> Nueva Partida</a>
+            <button class="btn" onclick="window.print()"><i class="fas fa-download"></i> Exportar Stats</a>
+            <button class="btn" onclick="compartirStats()"><i class="fas fa-share"></i> Compartir Resultado</button>
+        </div>
+    </div>
+
+    <script>
+        // Animaciones y efectos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animar barras de confianza
+            setTimeout(() => {
+                const confidenceFill = document.querySelector('.confidence-fill');
+                if (confidenceFill) {
+                    confidenceFill.style.width = '78%';
+                }
+            }, 500);
+
+            // Efecto typewriter en terminal
+            const terminalLines = document.querySelectorAll('.model-terminal .terminal-line');
+            terminalLines.forEach((line, index) => {
+                line.style.opacity = '0';
+                setTimeout(() => {
+                    line.style.opacity = '1';
+                    line.style.animation = 'fadeInUp 0.5s ease-out';
+                }, index * 300);
+            });
+
+            // Actualizar stats dinámicamente
+            updateDynamicStats();
+        });
+
+        function updateDynamicStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.animation = 'pulse 0.5s ease-out';
+                }, index * 100);
+            });
+        }
+
+        function compartirStats() {
+            const resultado = 'SOBREVIVIÓ';
+            const confianza = '78%';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Estadísticas CS:GO',
+                    text: `🎮 Resultado de Partida: ${resultado} | Confianza: ${confianza} | Reina Morada CS`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback para navegadores sin Web Share API
+                const texto = `🎮 Resultado CS:GO: ${resultado} | Confianza IA: ${confianza} | Reina Morada CS 💜`;
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('📋 ¡Stats copiadas al portapapeles!');
+                });
+            }
+        }
+
+        // Efectos de sonido simulados
+        function playSound(tipo) {
+            console.log(`🔊 Reproduciendo efecto de sonido ${tipo}`);
+        }
+
+        // Reproducir sonido según resultado
+        setTimeout(function() {
+            playSound('victoria');
+        }, 1000);
+
+        // Easter egg: Konami code para activar modo Rainbow
+        let konamiCode = [];
+        const konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // ↑↑↓↓←→←→BA
+
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konami.length) {
+                konamiCode.shift();
+            }
+            
+            if (konamiCode.join(',') === konami.join(',')) {
+                // Activar modo rainbow
+                document.body.style.filter = 'hue-rotate(0deg)';
+                document.body.style.animation = 'hue-rotate 3s linear infinite';
+                
+                // Crear estilo dinámico
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes hue-rotate {
+                        0% { filter: hue-rotate(0deg); }
+                        100% { filter: hue-rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                    document.body.style.filter = '';
+                    style.remove();
+                }, 3000);
+                
+                konamiCode = [];
+            }
+        });
+
+        console.log(`
+        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+        ▓ ESTADÍSTICAS CS:GO CARGADAS        ▓
+        ▓ Edición Morada - UI Profesional    ▓
+        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+        
+        🎮 Resultado: SOBREVIVIÓ
+        💜 Confianza: 78%
+        ⭐ Rango: Élite Global
+        🗺️ Mapa: de_dust2
+        
+        ¡Prueba el código Konami! ↑↑↓↓←→←→BA
+        `);
+    </script>
+</body>
+</html>
