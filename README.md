@@ -1,6 +1,5 @@
-# 🎮 CS:GO Estadísticas de Partida - Edición Morada
+# 🎮 CS:GO Estadísticas de Partida
 
-![Banner](images/banner_csgo_purple.png)
 
 ## Descripción
 
