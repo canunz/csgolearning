@@ -62,20 +62,6 @@ Este proyecto es una aplicación web interactiva que predice la supervivencia de
 
 ---
 
-## 🎮 Simulación de Partida en Consola
-
-```bash
-root@csgo-ia:~$ ./predictor_ml --analizar --datos_jugador
-[INFO] Cargando modelo ML...
-[INFO] Procesando estadísticas del jugador...
-[INFO] Características analizadas: TiempoVivo, Equipamiento, Ratio KD...
-[WARN] Precisión del modelo: 85.2% - Alta confianza
-[ÉXITO] Predicción: PROBABILIDAD DE SUPERVIVENCIA ALTA
-[ÉXITO] Nivel de confianza: 78%
-root@csgo-ia:~$ _
-```
-
----
 
 ## 📦 Estructura del Proyecto
 
@@ -101,7 +87,5 @@ modelos-master/
 - Licencia: MIT
 
 ---
-
-## 💜 ¡GL & HF! (Good Luck & Have Fun)
 
 ¿Te gustaría contribuir o tienes sugerencias? ¡Abre un issue o un pull request!
